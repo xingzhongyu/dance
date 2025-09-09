@@ -46,7 +46,7 @@ intersphinx_mapping = {
 autodoc_typehints = "description"
 
 templates_path = ['_templates']
-exclude_patterns = []
+exclude_patterns = ['temp_data']
 
 language = 'en'
 

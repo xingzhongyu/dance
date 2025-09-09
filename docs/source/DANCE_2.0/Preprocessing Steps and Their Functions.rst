@@ -1,4 +1,4 @@
-Step Functions Index
+Preprocessing Steps and Their Functions
 ====================
 
 This page lists the preprocessing functions included in each step.

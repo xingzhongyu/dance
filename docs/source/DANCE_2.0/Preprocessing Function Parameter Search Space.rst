@@ -1,4 +1,4 @@
-Step 3 Default Config
+Preprocessing Function Parameter Search Space
 ========================
 
 This is the config for step 3 default.
