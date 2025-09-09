@@ -7,6 +7,7 @@ DANCE 2.0
    :hidden:
 
 
+
    experiments/cluster/index
    experiments/celltype_annotation/index
    experiments/imputation/index
@@ -15,3 +16,4 @@ DANCE 2.0
    experiments/celltype_deconvolution/index
    Preprocessing Function Parameter Search Space
    Preprocessing Steps and Their Functions
+   tutorials/tutorial.ipynb

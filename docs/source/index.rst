@@ -51,12 +51,12 @@ some of the experiments from the original papers.
 
 .. toctree::
    :maxdepth: 2
-   :caption: DANCE_2.0
+   :caption: DANCE 2.0
 
-   DANCE_2.0/tutorials/tutorial.ipynb
-   DANCE_2.0/Preprocessing Steps and Their Functions
-   DANCE_2.0/Preprocessing Function Parameter Search Space
-   DANCE_2.0/experiments/index
+   DANCE 2.0/tutorials/tutorial.ipynb
+   DANCE 2.0/Preprocessing Steps and Their Functions
+   DANCE 2.0/Preprocessing Function Parameter Search Space
+   DANCE 2.0/experiments/index
 
 .. note::
    The functions in the :doc:`api/atlas` module are primarily backend APIs for the DANCE 2.0 Platform.
