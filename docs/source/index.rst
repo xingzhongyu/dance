@@ -47,6 +47,21 @@ Finally, you can checkout some
 we provided to reproduce
 some of the experiments from the original papers.
 
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: DANCE 2.0
+
+   DANCE 2.0/tutorials/tutorial.ipynb
+   DANCE 2.0/Preprocessing Steps and Their Functions
+   DANCE 2.0/Preprocessing Function Parameter Search Space
+   DANCE 2.0/experiments/index
+
+.. note::
+   The functions in the :doc:`api/atlas` module are primarily backend APIs for the DANCE 2.0 Platform.
+   For interactive usage, please visit the `DANCE 2.0 Platform <http://omicsml.ai:81/dance/>`_.
+
 .. toctree::
    :maxdepth: 2
    :caption: Modules
@@ -66,21 +81,7 @@ some of the experiments from the original papers.
    api/search
    api/atlas
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Tutorials
 
-   tutorials/tutorial.ipynb
-
-.. note::
-   The functions in the :doc:`api/atlas` module are primarily backend APIs for the DANCE 2.0 Platform.
-   For interactive usage, please visit the `DANCE 2.0 Platform <http://omicsml.ai:81/dance/>`_.
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Experiments
-
-   experiments/index
 
 Indices and tables
 ==================
