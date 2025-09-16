@@ -1,23 +1,23 @@
-Preprocessing Steps and Their Functions
+Preprocessing Steps and Available Function Candidates
 ====================
 
 This page lists the preprocessing functions included in each step.
 
-filter.gene
+Preprocessing Step: filter.gene
 -----------
 
 - :class:`dance.transforms.FilterGenesPercentile`
 - :class:`dance.transforms.FilterGenesScanpyOrder`
 - :class:`dance.transforms.FilterGenesPlaceHolder`
 
-filter.cell
+Preprocessing Step: filter.cell
 -----------
 
 - :class:`dance.transforms.FilterCellsScanpyOrder`
 - :class:`dance.transforms.FilterCellsPlaceHolder`
 - :class:`dance.transforms.FilterCellsCommonMod`
 
-normalize
+Preprocessing Step: normalize
 ---------
 
 - :class:`dance.transforms.ColumnSumNormalize`
@@ -28,7 +28,7 @@ normalize
 - :class:`dance.transforms.tfidfTransform`
 - :class:`dance.transforms.NormalizePlaceHolder`
 
-filter.gene(highly_variable)
+Preprocessing Step: filter.gene(highly_variable)
 -----------
 
 - :class:`dance.transforms.FilterGenesTopK`
@@ -39,7 +39,7 @@ filter.gene(highly_variable)
 - :class:`dance.transforms.HighlyVariableGenesLogarithmizedByMeanAndDisp`
 - :class:`dance.transforms.FilterGenesNumberPlaceHolder`
 
-feature.cell
+Preprocessing Step: feature.cell
 ------------
 
 - :class:`dance.transforms.CellPCA`

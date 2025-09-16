@@ -2,6 +2,125 @@
 type: preprocessor
 tune_mode: params
 pipeline:
+#filter.gene
+  - type: filter.gene
+    target: FilterGenesPercentile
+    params_to_tune:
+      min_val:
+        min: 1
+        max: 10
+      max_val:
+        min: 95
+        max: 99
+      mode:
+        values: [sum, var, cv, rv]
+  - type: filter.gene
+    target: FilterGenesScanpyOrder
+    params_to_tune:
+      order:
+        values:
+          - [min_counts, min_cells, max_counts, max_cells]
+          - [min_counts, min_cells, max_cells, max_counts]
+          - [min_counts, max_counts, min_cells, max_cells]
+          - [min_counts, max_counts, max_cells, min_cells]
+          - [min_counts, max_cells, min_cells, max_counts]
+          - [min_counts, max_cells, max_counts, min_cells]
+          - [min_cells, min_counts, max_counts, max_cells]
+          - [min_cells, min_counts, max_cells, max_counts]
+          - [min_cells, max_counts, min_counts, max_cells]
+          - [min_cells, max_counts, max_cells, min_counts]
+          - [min_cells, max_cells, min_counts, max_counts]
+          - [min_cells, max_cells, max_counts, min_counts]
+          - [max_counts, min_counts, min_cells, max_cells]
+          - [max_counts, min_counts, max_cells, min_cells]
+          - [max_counts, min_cells, min_counts, max_cells]
+          - [max_counts, min_cells, max_cells, min_counts]
+          - [max_counts, max_cells, min_counts, min_cells]
+          - [max_counts, max_cells, min_cells, min_counts]
+          - [max_cells, min_counts, min_cells, max_counts]
+          - [max_cells, min_counts, max_counts, min_cells]
+          - [max_cells, min_cells, min_counts, max_counts]
+          - [max_cells, min_cells, max_counts, min_counts]
+          - [max_cells, max_counts, min_counts, min_cells]
+          - [max_cells, max_counts, min_cells, min_counts]
+            # cta_problem
+            # min_counts:
+            #   min: 1
+            #   max: 10
+            # min_cells:
+            #   min: 1
+            #   max: 10
+            # max_counts:
+            #   min: 500
+            #   max: 5000
+            # max_cells:
+            #   min: 500
+            #   max: 5000
+      min_counts:
+        min: 3
+        max: 500
+      min_cells:
+        min: 0.0
+        max: 0.1
+      max_counts:
+        min: 0.9
+        max: 1.0
+      max_cells:
+        min: 0.95
+        max: 1.0
+  - type: filter.gene
+    target: FilterGenesPlaceHolder
+
+
+#filter.cell
+  - type: filter.cell
+    target: FilterCellsScanpyOrder
+    params_to_tune:
+      order:
+        values:
+          - [min_counts, min_genes, max_counts, max_genes]
+          - [min_counts, min_genes, max_genes, max_counts]
+          - [min_counts, max_counts, min_genes, max_genes]
+          - [min_counts, max_counts, max_genes, min_genes]
+          - [min_counts, max_genes, min_genes, max_counts]
+          - [min_counts, max_genes, max_counts, min_genes]
+          - [min_genes, min_counts, max_counts, max_genes]
+          - [min_genes, min_counts, max_genes, max_counts]
+          - [min_genes, max_counts, min_counts, max_genes]
+          - [min_genes, max_counts, max_genes, min_counts]
+          - [min_genes, max_genes, min_counts, max_counts]
+          - [min_genes, max_genes, max_counts, min_counts]
+          - [max_counts, min_counts, min_genes, max_genes]
+          - [max_counts, min_counts, max_genes, min_genes]
+          - [max_counts, min_genes, min_counts, max_genes]
+          - [max_counts, min_genes, max_genes, min_counts]
+          - [max_counts, max_genes, min_counts, min_genes]
+          - [max_counts, max_genes, min_genes, min_counts]
+          - [max_genes, min_counts, min_genes, max_counts]
+          - [max_genes, min_counts, max_counts, min_genes]
+          - [max_genes, min_genes, min_counts, max_counts]
+          - [max_genes, min_genes, max_counts, min_counts]
+          - [max_genes, max_counts, min_counts, min_genes]
+          - [max_genes, max_counts, min_genes, min_counts]
+      min_counts:
+        min: 0.0  # Change occurs when joint embedding
+        max: 0.05
+      min_genes:
+        min: 0.0
+        max: 0.05
+      max_counts:
+        min: 0.95
+        max: 1.0
+      max_genes:
+        min: 0.95
+        max: 1.0
+  - type: filter.cell
+    target: FilterCellsPlaceHolder
+  - type: filter.cell
+    target: FilterCellsCommonMod
+
+
+#normalize
   - type: normalize
     target: ColumnSumNormalize
     params_to_tune:
@@ -58,17 +177,9 @@ pipeline:
     target: tfidfTransform
   - type: normalize
     target: NormalizePlaceHolder
-  - type: filter.gene
-    target: FilterGenesPercentile
-    params_to_tune:
-      min_val:
-        min: 1
-        max: 10
-      max_val:
-        min: 95
-        max: 99
-      mode:
-        values: [sum, var, cv, rv]
+
+
+#filter.gene(highly_variable)
   - type: filter.gene
     target: FilterGenesTopK
     params_to_tune:
@@ -91,60 +202,6 @@ pipeline:
     target: FilterGenesMatch
     params:
       prefixes: [ERCC, MT-]
-  - type: filter.gene
-    target: FilterGenesScanpyOrder
-    params_to_tune:
-      order:
-        values:
-          - [min_counts, min_cells, max_counts, max_cells]
-          - [min_counts, min_cells, max_cells, max_counts]
-          - [min_counts, max_counts, min_cells, max_cells]
-          - [min_counts, max_counts, max_cells, min_cells]
-          - [min_counts, max_cells, min_cells, max_counts]
-          - [min_counts, max_cells, max_counts, min_cells]
-          - [min_cells, min_counts, max_counts, max_cells]
-          - [min_cells, min_counts, max_cells, max_counts]
-          - [min_cells, max_counts, min_counts, max_cells]
-          - [min_cells, max_counts, max_cells, min_counts]
-          - [min_cells, max_cells, min_counts, max_counts]
-          - [min_cells, max_cells, max_counts, min_counts]
-          - [max_counts, min_counts, min_cells, max_cells]
-          - [max_counts, min_counts, max_cells, min_cells]
-          - [max_counts, min_cells, min_counts, max_cells]
-          - [max_counts, min_cells, max_cells, min_counts]
-          - [max_counts, max_cells, min_counts, min_cells]
-          - [max_counts, max_cells, min_cells, min_counts]
-          - [max_cells, min_counts, min_cells, max_counts]
-          - [max_cells, min_counts, max_counts, min_cells]
-          - [max_cells, min_cells, min_counts, max_counts]
-          - [max_cells, min_cells, max_counts, min_counts]
-          - [max_cells, max_counts, min_counts, min_cells]
-          - [max_cells, max_counts, min_cells, min_counts]
-            # cta_problem
-            # min_counts:
-            #   min: 1
-            #   max: 10
-            # min_cells:
-            #   min: 1
-            #   max: 10
-            # max_counts:
-            #   min: 500
-            #   max: 5000
-            # max_cells:
-            #   min: 500
-            #   max: 5000
-      min_counts:
-        min: 3
-        max: 500
-      min_cells:
-        min: 0.0
-        max: 0.1
-      max_counts:
-        min: 0.9
-        max: 1.0
-      max_cells:
-        min: 0.95
-        max: 1.0
   - type: filter.gene
     target: HighlyVariableGenesRawCount
     params_to_tune:
@@ -186,54 +243,9 @@ pipeline:
       flavor:
         values: [seurat, cell_ranger]
   - type: filter.gene
-    target: FilterGenesPlaceHolder
-  - type: filter.gene
     target: FilterGenesNumberPlaceHolder
-  - type: filter.cell
-    target: FilterCellsScanpyOrder
-    params_to_tune:
-      order:
-        values:
-          - [min_counts, min_genes, max_counts, max_genes]
-          - [min_counts, min_genes, max_genes, max_counts]
-          - [min_counts, max_counts, min_genes, max_genes]
-          - [min_counts, max_counts, max_genes, min_genes]
-          - [min_counts, max_genes, min_genes, max_counts]
-          - [min_counts, max_genes, max_counts, min_genes]
-          - [min_genes, min_counts, max_counts, max_genes]
-          - [min_genes, min_counts, max_genes, max_counts]
-          - [min_genes, max_counts, min_counts, max_genes]
-          - [min_genes, max_counts, max_genes, min_counts]
-          - [min_genes, max_genes, min_counts, max_counts]
-          - [min_genes, max_genes, max_counts, min_counts]
-          - [max_counts, min_counts, min_genes, max_genes]
-          - [max_counts, min_counts, max_genes, min_genes]
-          - [max_counts, min_genes, min_counts, max_genes]
-          - [max_counts, min_genes, max_genes, min_counts]
-          - [max_counts, max_genes, min_counts, min_genes]
-          - [max_counts, max_genes, min_genes, min_counts]
-          - [max_genes, min_counts, min_genes, max_counts]
-          - [max_genes, min_counts, max_counts, min_genes]
-          - [max_genes, min_genes, min_counts, max_counts]
-          - [max_genes, min_genes, max_counts, min_counts]
-          - [max_genes, max_counts, min_counts, min_genes]
-          - [max_genes, max_counts, min_genes, min_counts]
-      min_counts:
-        min: 0.0  # Change occurs when joint embedding
-        max: 0.05
-      min_genes:
-        min: 0.0
-        max: 0.05
-      max_counts:
-        min: 0.95
-        max: 1.0
-      max_genes:
-        min: 0.95
-        max: 1.0
-  - type: filter.cell
-    target: FilterCellsPlaceHolder
-  - type: filter.cell
-    target: FilterCellsCommonMod
+
+#feature.cell
   - type: feature.cell
     target: CellPCA
     params:
