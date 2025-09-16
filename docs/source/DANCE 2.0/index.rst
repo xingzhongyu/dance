@@ -14,6 +14,6 @@ DANCE 2.0
    experiments/joint_embedding/index
    experiments/spatial_domain/index
    experiments/celltype_deconvolution/index
-   Preprocessing Function Parameter Search Space
-   Preprocessing Steps and Their Functions
+   Search Space of Preprocessing Function Parameters
+   Preprocessing Steps and Available Function Candidates
    tutorials/tutorial.ipynb

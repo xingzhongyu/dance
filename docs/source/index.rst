@@ -54,8 +54,8 @@ some of the experiments from the original papers.
    :caption: DANCE 2.0
 
    DANCE 2.0/tutorials/tutorial.ipynb
-   DANCE 2.0/Preprocessing Steps and Their Functions
-   DANCE 2.0/Preprocessing Function Parameter Search Space
+   DANCE 2.0/Preprocessing Steps and Available Function Candidates
+   DANCE 2.0/Search Space of Preprocessing Function Parameters
    DANCE 2.0/experiments/index
 
 .. note::
