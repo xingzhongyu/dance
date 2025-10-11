@@ -138,7 +138,7 @@ as well as easily reproducible experiments by providing unified tools for
 ### Overview
 
 In release 2.0, DANCE evolves from an experiment reproduction library into an automated and interpretable preprocessing platform. It provides powerful tools to optimize your single-cell analysis workflows:
-To discover the best preprocessing pipeline for a specific method, you can use our Method-Aware Preprocessing (MAP) module. For practical examples on how to run this locally, please see [`examples/tuning/custom-methods/`](examples/tuning/custom-methods%60).
+To discover the best preprocessing pipeline for a specific method, you can use our Method-Aware Preprocessing (MAP) module. For practical examples on how to run this locally, please see [`examples/tuning/custom-methods/`](examples/tuning/custom-methods).
 To get an instant, high-quality pipeline recommendation for a new dataset, you can use our Dataset-Aware Preprocessing (DAP) web service, available at http://omicsml.ai:81/dance/.
 Together, these features transform single-cell preprocessing from a manual, trial-and-error process into a systematic, data-driven, and reproducible workflow.
 
