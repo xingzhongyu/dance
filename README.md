@@ -40,7 +40,7 @@ Both include three modules at present:
 **DANCE 1.0 Paper (published on Genome Biology)**: [DANCE: a deep learning library and benchmark platform for single-cell analysis](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-024-03211-z) \
 **DANCE 2.0 Paper**: [DANCE 2.0: Transforming single-cell analysis from black box to transparent workflow](https://www.biorxiv.org/content/10.1101/2025.07.17.665427v1) \
 **Survey Paper (published on ACM TIST):** [Deep Learning in Single-cell Analysis](https://dl.acm.org/doi/10.1145/3641284) \
-**DANCE 2.0 Platform (DAP Subproject)**: [DANCE 2.0 Platform: Automated Optimal Preprocessing Recommendation for Single-Cell Data & Methods](http://omicsml.ai:81/dance/)
+**DANCE 2.0 Platform (DAP Subproject)**: [Automated Optimal Preprocessing Recommendation for Single-Cell Data & Methods](http://omicsml.ai:81/dance/)
 
 ## Join the Community
 
