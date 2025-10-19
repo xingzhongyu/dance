@@ -6,6 +6,7 @@ from sklearn.metrics import adjusted_rand_score
 
 from dance.datasets.spatial import SpatialLIBDDataset
 from dance.modules.spatial.spatial_domain.EfNST import EfNsSTRunner
+from sklearn.metrics import adjusted_rand_score, pairwise_distances
 from dance.utils import set_seed
 
 if __name__ == "__main__":

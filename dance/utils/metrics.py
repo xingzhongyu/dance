@@ -1,11 +1,14 @@
+from typing import Dict
 import anndata as ad
 import numpy as np
+import pandas as pd
 import torch
 from networkx.algorithms import bipartite
 from scipy import sparse
 from sklearn.cluster import KMeans
 from sklearn.metrics import adjusted_rand_score, mean_absolute_percentage_error, mean_squared_error
 from sklearn.metrics.cluster import normalized_mutual_info_score
+from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
 from dance import logger
 from dance.registry import REGISTERED_METRIC_FUNCS, register_metric_func
@@ -188,3 +191,108 @@ def integration_openproblems_evaluate(adata: ad.AnnData):
     score['graph_conn'] = scib.me.graph_connectivity(adata, label_key='cell_type')
     score['final_scores'] = sum(score.values()) / len(score)
     return score
+
+@register_metric_func("silhouette")
+@torch_to_numpy
+def silhouette(X: Union[torch.Tensor, np.ndarray], labels: Union[torch.Tensor, np.ndarray]) -> float:
+    """Silhouette Coefficient.
+    
+    A higher Silhouette Coefficient score relates to a model with better defined clusters.
+    The score is higher when clusters are dense and well separated.
+
+    See
+    :func: `sklearn.metrics.silhouette_score`.
+    """
+    # 轮廓系数要求簇的数量至少为2，最多为 n_samples - 1
+    n_labels = len(np.unique(labels))
+    n_samples = len(X)
+    if not (2 <= n_labels < n_samples):
+        # 如果簇的数量不满足要求（例如所有点都分到一类），返回一个无意义的差值
+        # 返回0或-1都是常见做法，这里返回0表示中性
+        print(f"Warning: Silhouette score is not defined for n_labels={n_labels}. Returning 0.")
+        return 0.0
+    
+    return silhouette_score(X, labels)
+
+@register_metric_func("calinski_harabasz")
+@torch_to_numpy
+def calinski_harabasz(X: Union[torch.Tensor, np.ndarray], labels: Union[torch.Tensor, np.ndarray]) -> float:
+    """Calinski-Harabasz Index (Variance Ratio Criterion).
+
+    The score is higher when clusters are dense and well separated. It is computed
+    as the ratio of the sum of between-cluster dispersion and of within-cluster dispersion.
+
+    See
+    :func: `sklearn.metrics.calinski_harabasz_score`.
+    """
+    # 与轮廓系数类似，CH指数也要求簇的数量在[2, n_samples-1]之间
+    n_labels = len(np.unique(labels))
+    n_samples = len(X)
+    if not (2 <= n_labels < n_samples):
+        print(f"Warning: Calinski-Harabasz score is not defined for n_labels={n_labels}. Returning 0.")
+        return 0.0
+
+    return calinski_harabasz_score(X, labels)
+
+@register_metric_func("davies_bouldin")
+@torch_to_numpy
+def davies_bouldin(X: Union[torch.Tensor, np.ndarray], labels: Union[torch.Tensor, np.ndarray]) -> float:
+    """Davies-Bouldin Index.
+
+    The score is defined as the average similarity measure of each cluster with its
+    most similar cluster, where similarity is the ratio of within-cluster distances
+    to between-cluster distances. Thus, clusters which are farther apart and less
+    dispersed will result in a better score. A lower value is better.
+
+    See
+    :func: `sklearn.metrics.davies_bouldin_score`.
+    """
+    # DB指数同样要求簇的数量在[2, n_samples-1]之间
+    n_labels = len(np.unique(labels))
+    n_samples = len(X)
+    if not (2 <= n_labels < n_samples):
+        print(f"Warning: Davies-Bouldin score is not defined for n_labels={n_labels}. Returning 0.")
+        return 0.0
+
+    return davies_bouldin_score(X, labels)
+
+
+
+def calculate_unified_scores(scores_list: list[Dict[str, float]]) -> np.ndarray:
+    """
+    Calculates a unified score from a list of raw metric scores from multiple experiments.
+    It normalizes each metric, inverts the Davies-Bouldin score, and then averages them.
+
+    Args:
+        scores_list: A list of dictionaries, where each dictionary is the output of 
+                     get_raw_internal_scores for one experiment.
+
+    Returns:
+        A NumPy array containing the final unified score for each experiment.
+    """
+    if not scores_list:
+        return np.array([])
+
+    # 使用Pandas DataFrame可以极大地简化标准化操作
+    df = pd.DataFrame(scores_list)
+
+    # 1. 标准化 (Min-Max Scaling)
+    # 越高越好的指标
+    norm_s = (df["silhouette"] - df["silhouette"].min()) / (df["silhouette"].max() - df["silhouette"].min())
+    norm_ch = (df["calinski_harabasz"] - df["calinski_harabasz"].min()) / (df["calinski_harabasz"].max() - df["calinski_harabasz"].min())
+    
+    # 越低越好的指标 (Davies-Bouldin)
+    # 先反转，使其越高越好，然后标准化
+    norm_db = (df["davies_bouldin"].max() - df["davies_bouldin"]) / (df["davies_bouldin"].max() - df["davies_bouldin"].min())
+
+    # 处理分母为0的特殊情况 (即所有值都一样)
+    # 在这种情况下，所有标准化后的值都应该是相同的，Pandas的向量化操作会自动处理为NaN，我们将其填充为0.5（中性值）或0
+    norm_s = norm_s.fillna(0.5)
+    norm_ch = norm_ch.fillna(0.5)
+    norm_db = norm_db.fillna(0.5)
+
+    # 2. 均等加权求平均
+    # 这里我们使用均等权重
+    unified_scores = (norm_s + norm_ch + norm_db) / 3.0
+    
+    return unified_scores.to_numpy()

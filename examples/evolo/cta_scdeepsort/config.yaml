@@ -1,0 +1,94 @@
+# Configuration for function minimization example
+max_iterations: 50 #50
+checkpoint_interval: 5
+
+# LLM configuration
+llm:
+  primary_model: "deepseek-reasoner" #"deepseek-reasoner"
+  # primary_model: "llama3.1-8b"
+  primary_model_weight: 0.8
+  secondary_model: "deepseek-reasoner" #"deepseek-reasoner"
+  # secondary_model: "llama-4-scout-17b-16e-instruct"
+  secondary_model_weight: 0.2
+  api_base: "https://api.deepseek.com"
+  # api_base: "https://api.cerebras.ai/v1"
+  temperature: 0.7
+  max_tokens: 8192
+  timeout: 1200
+
+# Prompt configuration
+prompt:
+  system_message: "
+                  ### Improved Agent Prompt
+
+                  You are an expert programmer specializing in Graph Neural Networks (GNNs) and bioinformatics. Your task is to significantly improve a cell-type annotation script that uses the scDeepSort model. The primary goal is to increase the model's final prediction accuracy by enhancing the graph data representation.
+
+                  The script uses DGL and PyTorch. The core of the data preprocessing involves building a cell-gene bipartite graph. Your modifications should focus on the data preprocessing and graph construction logic (`WeightedFeaturePCA`, `CellFeatureGraph`, `PCACellFeatureGraph`) to create a more powerful and informative graph structure that is optimized for the scDeepSort GNN.
+
+                  ---
+
+                  ### Context: The scDeepSort Model Architecture
+
+                  To make informed improvements, you must understand the downstream GNN model:
+
+                  1.  **Graph Structure:** The model consumes a large graph containing both **cell nodes** and **gene nodes**. It's fundamentally a bipartite graph.
+                  2.  **Node Features:**
+                      *   **Gene Features:** Initialized as PCA components of the transposed (gene x cell) expression matrix.
+                      *   **Cell Features:** Initialized as a weighted sum of the gene PCA features, where weights are the cell's own expression values.
+                  3.  **GNN Layer (`AdaptiveSAGE`):** The model does **not** use a standard GraphSAGE. It uses a custom `AdaptiveSAGE` layer which includes a learnable parameter `self.alpha`.
+                  4.  **Specialized Self-Loops:** The `self.alpha` parameter is specifically designed to learn the importance of different message types. Crucially, it has dedicated weights for **gene-to-gene self-loops** and **cell-to-cell self-loops**. This means the model intrinsically has a mechanism to learn how much a node should listen to itself.
+
+                  ---
+
+                  ### Potential Improvement Strategies
+
+                  Focus your improvements on the preprocessor classes. Here are several strategies, now tailored to the scDeepSort architecture. You are encouraged to combine them or develop your own novel approaches.
+
+                  **1. Alternative Dimensionality Reduction (in `WeightedFeaturePCA`):**
+                  *   PCA is not always optimal for sparse, non-negative gene expression data. Replace it with more suitable techniques.
+                      *   **Truncated SVD:** An excellent choice for sparse matrices.
+                      *   **NMF (Non-negative Matrix Factorization):** Can yield more interpretable, parts-based features, which may be more biologically relevant.
+                  *   **Decouple Cell and Gene Features:** The current method derives cell features from gene features. Consider initializing cell features independently, perhaps using PCA directly on the cell-by-gene matrix without transposing, to capture cell-level variance more directly.
+
+                  **2. Advanced Edge Weighting (in `CellFeatureGraph`):**
+                  *   The current edge weights are raw expression values. This can be improved.
+                      *   **TF-IDF Transformation:** Treat cells as 'documents' and genes as 'words'. This up-weights genes that are highly expressed in a specific cell but rare across all cells, effectively highlighting marker genes.
+                      *   **Log Transformation:** Apply `log(1 + x)` to the expression values to dampen the effect of outlier high-expression genes and stabilize variance.
+
+                  **3. Graph Structure Modification (in `CellFeatureGraph`):**
+                  *   **Rethink Explicit Self-Loops:** The current code adds explicit self-loops with a weight of 1 for *all* nodes (`g.add_edges(g.nodes(), g.nodes())`). However, the `AdaptiveSAGE` layer **already has a learnable parameter `self.alpha`** to control the importance of self-loops. This explicit addition might be redundant, interfere with the model's learning, or 'double-dip' the self-loop information.
+                      *   **Action:** **Consider removing the explicit `g.add_edges(g.nodes(), g.nodes())` line.** Let the `AdaptiveSAGE` layer's learned parameters manage self-information entirely. This is a critical, model-aware optimization.
+                  *   **Graph Sparsification:** Instead of connecting every cell to every gene it expresses, build a k-NN graph. For each cell, only connect it to its 'k' most relevant genes (e.g., highest TF-IDF score). This can reduce noise and computational load.
+
+                  **4. Improved Normalization (in `CellFeatureGraph`):**
+                  *   The current edge weight normalization is a manual and inefficient for-loop.
+                      *   **Action:** Replace this loop with optimized, built-in DGL functions. The best practice is to use **`dgl.nn.EdgeWeightNorm(norm='both')`**. This is faster, more robust, and applies symmetric normalization which often helps GNN performance. Apply it to the `g.edata['weight']` tensor.
+
+                  **5. Advanced Graph Representation:**
+                  *   **Explicitly Bipartite Graph:** The current implementation creates a homogeneous graph and uses node features to distinguish cells from genes. A more modern and powerful approach in DGL is to construct a **heterograph** (`dgl.heterograph`).
+                      *   **Action:** Re-implement `CellFeatureGraph` to create a `dgl.heterograph` with two node types ('cell', 'gene') and one edge type ('expresses'). This allows for type-specific node features and potentially using heterogeneous message passing layers in the future, even if the current `AdaptiveSAGE` is homogeneous. It's a more robust and extensible design.
+
+                  **Constraints:**
+                  Do not change the `ScDeepSort` class, the main training loop, the command-line arguments, or the final evaluation output format (i.e., the script must still print 'mean_score: ...'). Your modifications must be confined to the data preprocessing and graph construction classes.
+                  "
+  include_artifacts: true
+  max_artifact_bytes: 32768
+  artifact_security_filter: true
+
+# Database configuration
+database:
+  population_size: 50
+  archive_size: 20
+  num_islands: 3
+  elite_selection_ratio: 0.2
+  exploitation_ratio: 0.7
+
+# Evaluator configuration
+evaluator:
+  timeout: 600000
+  cascade_thresholds: [0.3]
+  parallel_evaluations: 3
+
+# Evolution settings
+diff_based_evolution: true
+max_code_length: 20000
