@@ -165,3 +165,4 @@ examples/multi_modality/joint_embedding/models/*.pth
 trash
 out.log
 temp_data
+examples/evolo/environment.sh
