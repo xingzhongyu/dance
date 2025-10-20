@@ -139,8 +139,7 @@ if __name__ == "__main__":
         # Load data and perform necessary preprocessing
         dataloader = SpatialLIBDDataset(data_id=args.sample_number)
         data = dataloader.load_data(transform=preprocessing_pipeline, cache=args.cache)
-        print(data)
-        raise Exception("Stop here")
+        
         (x, adj, adj_2d), y = data.get_train_data()
 
         # Train and evaluate model
@@ -149,8 +148,9 @@ if __name__ == "__main__":
         res = model.search_set_res((x, adj), l=l, target_num=args.n_clusters, start=0.4, step=args.step, tol=args.tol,
                                    lr=args.lr, epochs=args.epochs, max_run=args.max_run)
 
-        pred = model.fit_predict((x, adj), init_spa=True, init="louvain", tol=args.tol, lr=args.lr, epochs=args.epochs,
+        model.fit((x, adj), init_spa=True, init="louvain", tol=args.tol, lr=args.lr, epochs=args.epochs,
                                  res=res)
+        embed, pred = model.predict((x, adj), return_embed=True)
         score = model.default_score_func(y, pred)
         
         refined_pred = refine(sample_id=data.data.obs_names.tolist(), pred=pred.tolist(), dis=adj_2d, shape="hexagon")
@@ -160,14 +160,16 @@ if __name__ == "__main__":
         calinski_harabasz_score = resolve_score_func("calinski_harabasz")
         davies_bouldin_score = resolve_score_func("davies_bouldin")
         inner_scores.append(calculate_unified_scores({
-            "silhouette": silhouette_score(x, refined_pred),
-            "calinski_harabasz": calinski_harabasz_score(x, refined_pred),
-            "davies_bouldin": davies_bouldin_score(x, refined_pred)
+            "silhouette": silhouette_score(embed, refined_pred),
+            "calinski_harabasz": calinski_harabasz_score(embed, refined_pred),
+            "davies_bouldin": davies_bouldin_score(embed, refined_pred)
         }))
         print(f"ARI: {score:.4f}")
 
         scores.append(score_refined)
         print(f"ARI (refined): {score_refined:.4f}")
+        print(data)
+        raise Exception("Stop here")
     print(f"SpaGCN {args.sample_number}:")
     print(f"mean_score: {np.mean(scores):.5f} +/- {np.std(scores):.5f}")
     print(f"mean_inner_score: {np.mean(inner_scores):.5f} +/- {np.std(inner_scores):.5f}")

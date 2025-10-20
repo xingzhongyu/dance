@@ -875,10 +875,10 @@ class SpaGCN(BaseClusteringMethod):
         """
         embed, adj = x
         adj_exp = self.calc_adj_exp(adj)
-        _, pred_prob = self.model.predict(embed, adj_exp)
-        return pred_prob
+        embed, pred_prob = self.model.predict(embed, adj_exp)
+        return embed, pred_prob
 
-    def predict(self, x):
+    def predict(self, x,return_embed=False):
         """Prediction function.
 
         Returns
@@ -887,9 +887,12 @@ class SpaGCN(BaseClusteringMethod):
             The predicted labels and the predicted probabilities.
 
         """
-        pred_prob = self.predict_proba(x)
+        embed,pred_prob = self.predict_proba(x)
         pred = torch.argmax(pred_prob, dim=1).data.cpu().numpy()
-        return pred
+        if return_embed:
+            return embed, pred
+        else:
+            return pred
 
     def get_svgs(self, adata, target):
         """Get SVGs.
