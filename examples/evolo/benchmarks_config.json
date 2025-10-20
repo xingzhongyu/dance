@@ -158,9 +158,9 @@
             "--n_epochs",
             "300", 
             "--num_runs",
-            "2",
+            "5",
             "--device",
-            "cuda:0"
+            "cuda:1"
         ],
         "Human_Spleen": [
             "--species",
@@ -183,7 +183,7 @@
             "--n_epochs",
             "300",
             "--num_runs",
-            "2",
+            "5",
             "--device",
             "cuda:2" 
         ],
@@ -213,7 +213,7 @@
             "--n_epochs",
             "300",
             "--num_runs",
-            "2",
+            "5",
             "--device",
             "cuda:3"
         ],
@@ -229,7 +229,7 @@
             "--n_epochs",
             "300",
             "--num_runs",
-            "2",
+            "5",
             "--device",
             "cuda:4",
             "--dense_dim",
@@ -265,7 +265,7 @@
             "--n_epochs",
             "300",
             "--num_runs",
-            "2",
+            "5",
             "--device",
             "cuda:5" 
         ]

@@ -139,6 +139,8 @@ if __name__ == "__main__":
         # Load data and perform necessary preprocessing
         dataloader = SpatialLIBDDataset(data_id=args.sample_number)
         data = dataloader.load_data(transform=preprocessing_pipeline, cache=args.cache)
+        print(data)
+        raise Exception("Stop here")
         (x, adj, adj_2d), y = data.get_train_data()
 
         # Train and evaluate model
