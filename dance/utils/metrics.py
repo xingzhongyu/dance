@@ -192,7 +192,7 @@ def integration_openproblems_evaluate(adata: ad.AnnData):
     score['final_scores'] = sum(score.values()) / len(score)
     return score
 
-@register_metric_func("silhouette")
+@register_metric_func()
 @torch_to_numpy
 def silhouette(X: Union[torch.Tensor, np.ndarray], labels: Union[torch.Tensor, np.ndarray]) -> float:
     """Silhouette Coefficient.
@@ -214,7 +214,7 @@ def silhouette(X: Union[torch.Tensor, np.ndarray], labels: Union[torch.Tensor, n
     
     return silhouette_score(X, labels)
 
-@register_metric_func("calinski_harabasz")
+@register_metric_func()
 @torch_to_numpy
 def calinski_harabasz(X: Union[torch.Tensor, np.ndarray], labels: Union[torch.Tensor, np.ndarray]) -> float:
     """Calinski-Harabasz Index (Variance Ratio Criterion).
@@ -234,7 +234,7 @@ def calinski_harabasz(X: Union[torch.Tensor, np.ndarray], labels: Union[torch.Te
 
     return calinski_harabasz_score(X, labels)
 
-@register_metric_func("davies_bouldin")
+@register_metric_func()
 @torch_to_numpy
 def davies_bouldin(X: Union[torch.Tensor, np.ndarray], labels: Union[torch.Tensor, np.ndarray]) -> float:
     """Davies-Bouldin Index.
@@ -258,41 +258,49 @@ def davies_bouldin(X: Union[torch.Tensor, np.ndarray], labels: Union[torch.Tenso
 
 
 
-def calculate_unified_scores(scores_list: list[Dict[str, float]]) -> np.ndarray:
+METRIC_BOUNDS = {
+    'silhouette': {'min': -1.0, 'max': 1.0},
+    'calinski_harabasz': {'min': 0.0, 'max': 20000.0}, 
+    'davies_bouldin': {'min': 0.0, 'max': 10.0}       
+}
+
+
+def calculate_unified_scores(score_dict: Dict[str, float]) -> float:
     """
-    Calculates a unified score from a list of raw metric scores from multiple experiments.
-    It normalizes each metric, inverts the Davies-Bouldin score, and then averages them.
-
-    Args:
-        scores_list: A list of dictionaries, where each dictionary is the output of 
-                     get_raw_internal_scores for one experiment.
-
-    Returns:
-        A NumPy array containing the final unified score for each experiment.
+    Evaluates performance with logging for out-of-bounds values before clipping.
     """
-    if not scores_list:
-        return np.array([])
+    # --- 1. Silhouette Score ---
+    s_val = score_dict['silhouette']
+    s_bounds = METRIC_BOUNDS['silhouette']
+    if not (s_bounds['min'] <= s_val <= s_bounds['max']):
+        logger.info(
+            f"Silhouette score {s_val:.4f} is outside the defined bounds "
+            f"[{s_bounds['min']}, {s_bounds['max']}]. Clipping."
+        )
+    s_val_clipped = np.clip(s_val, s_bounds['min'], s_bounds['max'])
+    norm_s = (s_val_clipped - s_bounds['min']) / (s_bounds['max'] - s_bounds['min'])
 
-    # 使用Pandas DataFrame可以极大地简化标准化操作
-    df = pd.DataFrame(scores_list)
-
-    # 1. 标准化 (Min-Max Scaling)
-    # 越高越好的指标
-    norm_s = (df["silhouette"] - df["silhouette"].min()) / (df["silhouette"].max() - df["silhouette"].min())
-    norm_ch = (df["calinski_harabasz"] - df["calinski_harabasz"].min()) / (df["calinski_harabasz"].max() - df["calinski_harabasz"].min())
+    # --- 2. Calinski-Harabasz Score ---
+    ch_val = score_dict['calinski_harabasz']
+    ch_bounds = METRIC_BOUNDS['calinski_harabasz']
+    if not (ch_bounds['min'] <= ch_val <= ch_bounds['max']):
+        logger.info(
+            f"Calinski-Harabasz score {ch_val:.2f} is outside the defined bounds "
+            f"[{ch_bounds['min']}, {ch_bounds['max']}]. Clipping."
+        )
+    ch_val_clipped = np.clip(ch_val, ch_bounds['min'], ch_bounds['max'])
+    norm_ch = (ch_val_clipped - ch_bounds['min']) / (ch_bounds['max'] - ch_bounds['min'])
     
-    # 越低越好的指标 (Davies-Bouldin)
-    # 先反转，使其越高越好，然后标准化
-    norm_db = (df["davies_bouldin"].max() - df["davies_bouldin"]) / (df["davies_bouldin"].max() - df["davies_bouldin"].min())
+    # --- 3. Davies-Bouldin Score ---
+    db_val = score_dict['davies_bouldin']
+    db_bounds = METRIC_BOUNDS['davies_bouldin']
+    if not (db_bounds['min'] <= db_val <= db_bounds['max']):
+        logger.info(
+            f"Davies-Bouldin score {db_val:.4f} is outside the defined bounds "
+            f"[{db_bounds['min']}, {db_bounds['max']}]. Clipping."
+        )
+    db_val_clipped = np.clip(db_val, db_bounds['min'], db_bounds['max'])
+    norm_db = (db_bounds['max'] - db_val_clipped) / (db_bounds['max'] - db_bounds['min'])
 
-    # 处理分母为0的特殊情况 (即所有值都一样)
-    # 在这种情况下，所有标准化后的值都应该是相同的，Pandas的向量化操作会自动处理为NaN，我们将其填充为0.5（中性值）或0
-    norm_s = norm_s.fillna(0.5)
-    norm_ch = norm_ch.fillna(0.5)
-    norm_db = norm_db.fillna(0.5)
-
-    # 2. 均等加权求平均
-    # 这里我们使用均等权重
-    unified_scores = (norm_s + norm_ch + norm_db) / 3.0
-    
-    return unified_scores.to_numpy()
+    unified_score = (norm_s + norm_ch + norm_db) / 3.0
+    return unified_score

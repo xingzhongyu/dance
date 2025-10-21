@@ -18,3 +18,6 @@ python ../openevolve-run.py initial_program.py ../evaluator.py --config config.y
 提示词里面应该描述一下算法的(除stagate以外均需要修改)
 
 修改聚类内部指标，使其可以描述空间和特征距离
+
+
+spagcn以及louvain的指标已经修改

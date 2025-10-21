@@ -86,7 +86,7 @@ database:
 evaluator:
   timeout: 600000
   cascade_thresholds: [0.3]
-  parallel_evaluations: 3
+  parallel_evaluations: 1
 
 # Evolution settings
 diff_based_evolution: true
